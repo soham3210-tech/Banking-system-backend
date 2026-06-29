@@ -48,8 +48,7 @@ async function userLoginController(req, res) {
         })
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "3d" })
-
+const token = jwt.sign({ userid: user._id }, process.env.JWT_SECRET,  { expiresIn: "3d" });
     res.cookie("token", token)
 
     res.status(200).json({

@@ -1,6 +1,29 @@
 const userModel = require("../models/user.model");
+const transporter = require("../config/nodemailer");
 
 const jwt=require("jsonwebtoken")
+
+
+async function register(req, res) {
+
+    // save user...
+
+    await transporter.sendMail({
+        from: process.env.EMAIL_USER,
+        to: req.body.email,
+        subject: "Welcome to Banking System",
+        text: "Your account has been created successfully."
+    });
+
+    res.json({
+        message: "Registration successful"
+    });
+}
+
+
+
+
+
 
 
 
@@ -81,6 +104,29 @@ async function userLogoutController(req, res) {
     res.status(200).json({
         message: "User logged out successfully"
     })
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+module.exports = {
+
+    register
 
 }
 module.exports = {

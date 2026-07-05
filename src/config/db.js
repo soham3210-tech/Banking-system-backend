@@ -12,3 +12,8 @@ function connecttodb() {
     });
 }
 module.exports = connecttodb;
+/* mongoose require and connect to db by mongoose.connect.then.catch
+ 
+
+
+*/

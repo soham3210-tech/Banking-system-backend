@@ -2,6 +2,7 @@ const express = require("express");
 const authRouter = require("./routes/auth.routes");
 const accountRouter = require("./routes/account.routes");
 const transactionRoutes = require("./routes/transaction.routes");
+const depositRoutes = require("./routes/deposit.routes");
 
 const app = express();
 
@@ -10,6 +11,7 @@ app.use(express.json());
 app.use("/api/auth", authRouter); // this authRouter function automatically does is that it make the route name api/auth/register or login or logout
 app.use("/api/accounts", accountRouter); /// this accountrouter function automatically does is that it make the route name api/accounts/
 app.use("/api/transaction", transactionRoutes); //// this authRouter function automatically does is that it make the route name api/transaction/....
+app.use("/api/deposit", depositRoutes);
 
 module.exports = app;
 

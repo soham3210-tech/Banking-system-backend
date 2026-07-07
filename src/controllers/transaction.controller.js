@@ -1,91 +1,79 @@
-const userModel = require("../models/user.model");
+const accountModel = require("../models/account.model");
+const transactionModel = require("../models/transaction.model");
+const ledgerModel = require("../models/ledger.model");
+const crypto = require("crypto");
 
-const {
-  sendTransactionSuccessEmail,
-  sendTransactionFailureEmail,
-} = require("../services/email.service");
-
-/**
- * TRANSFER MONEY
- */
 async function transferMoneyController(req, res) {
-  console.log("➡️ Transaction reached controller");
-
-  try {
-    const { senderId, receiverId, amount } = req.body;
-
-    const sender = await userModel.findById(senderId);
-    const receiver = await userModel.findById(receiverId);
-
-    if (!sender || !receiver) {
-      return res.status(404).json({
-        message: "Sender or Receiver not found",
-      });
-    }
-
-    if (sender.balance < amount) {
-      try {
-        await sendTransactionFailureEmail(
-          sender,
-          amount,
-          "Insufficient Balance",
-        );
-      } catch (emailErr) {
-        console.log(emailErr.message);
-      }
-
-      return res.status(400).json({
-        message: "Insufficient balance",
-      });
-    }
-
-    // 💸 perform transaction
-    sender.balance -= amount;
-    receiver.balance += amount;
-
-    await sender.save();
-    await receiver.save();
-
-    // ✅ send success email
-
     try {
-      console.log("SENDING EMAIL TO:", sender.email); // 👈 PUT IT HERE
+        const { fromAccount, toAccount, amount } = req.body;
 
-      await sendTransactionSuccessEmail(sender, amount, receiver.name);
-      console.log("➡️ SUCCESS email SENT");
-    } catch (emailErr) {
-      console.log(emailErr.message);
+        // find accounts
+        const senderAccount = await accountModel.findById(fromAccount);
+        const receiverAccount = await accountModel.findById(toAccount);
+
+        if (!senderAccount || !receiverAccount) {
+            return res.status(404).json({
+                message: "Sender or Receiver account not found"
+            });
+        }
+
+
+        // check sender balance
+        const senderBalance = await senderAccount.getBalance();
+
+        if (senderBalance < amount) {
+            return res.status(400).json({
+                message: "Insufficient balance"
+            });
+        }
+
+
+        // create transaction
+        const transaction = await transactionModel.create({
+            fromAccount,
+            toAccount,
+            amount,
+            status: "COMPLETED",
+            idempotencyKey: crypto.randomUUID()
+        });
+
+
+        // sender debit entry
+        await ledgerModel.create({
+            account: fromAccount,
+            amount,
+            transaction: transaction._id,
+            type: "DEBIT"
+        });
+
+
+        // receiver credit entry
+        await ledgerModel.create({
+            account: toAccount,
+            amount,
+            transaction: transaction._id,
+            type: "CREDIT"
+        });
+
+
+        const updatedBalance = await senderAccount.getBalance();
+
+
+        res.status(200).json({
+            message: "Transaction successful",
+            senderBalance: updatedBalance
+        });
+
+
+    } catch (error) {
+        res.status(500).json({
+            message: "Transaction failed",
+            error: error.message
+        });
     }
-
-    return res.status(200).json({
-      message: "Transaction successful",
-      senderBalance: sender.balance,
-    });
-  } catch (error) {
-    return res.status(500).json({
-      message: "Transaction failed",
-      error: error.message,
-    });
-  }
 }
 
+
 module.exports = {
-  transferMoneyController,
+    transferMoneyController
 };
-
-
-
-/*
-Transaction controller:
-
-- Imports the user model and transaction email service functions
-- Handles money transfer requests between users
-- Retrieves sender, receiver, and transfer amount from the request
-- Verifies that both sender and receiver exist
-- Checks if the sender has sufficient balance
-- Sends a failure email if the transaction cannot be completed due to insufficient balance
-- Transfers the amount by updating both users' account balances
-- Saves the updated balances to the database
-- Sends a success email after a successful transaction
-- Returns the transaction result or an error response
-*/

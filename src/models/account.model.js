@@ -80,7 +80,6 @@ const accountSchema = new mongoose.Schema(
     Account Currency
     -------------------------------------------------------
     Specifies the currency used by the account.
-
     Example:
       INR
       USD

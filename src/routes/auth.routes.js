@@ -3,25 +3,87 @@ const router = express.Router();
 
 const authController = require("../controllers/auth.controller");
 
-// REGISTER
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: Soham
+ *               email:
+ *                 type: string
+ *                 example: soham@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input
+ */
 router.post("/register", authController.userRegisterController);
 
-// LOGIN
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Login user
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: soham@gmail.com
+ *               password:
+ *                 type: string
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *       401:
+ *         description: Invalid credentials
+ */
 router.post("/login", authController.userLoginController);
 
-// LOGOUT
+/**
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Logout user
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout successful
+ *       401:
+ *         description: Unauthorized
+ */
 router.post("/logout", authController.userLogoutController);
 
 module.exports = router;
-
-
-/*
-Creates an Express router and connects authentication routes:
-- Imports Express 
-- create router instance with express
-- Imports authentication controller
-- Defines POST /register route for user registration
-- Defines POST /login route for user login
-- Defines POST /logout route for user logout
-- Exports the router to be used in the main app
-*/

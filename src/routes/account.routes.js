@@ -1,53 +1,79 @@
-const express = require("express")
-const authMiddleware = require("../middleware/auth.middleware")
-const accountController = require("../controllers/account.controller")
+const express = require("express");
+const authMiddleware = require("../middleware/auth.middleware");
+const accountController = require("../controllers/account.controller");
 
-
-const router = express.Router()
-
-
+const router = express.Router();
 
 /**
- * - POST /api/accounts/
- * - Create a new account
- * - Protected Route
+ * @swagger
+ * /api/accounts:
+ *   post:
+ *     summary: Create a new account
+ *     tags:
+ *       - Accounts
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       201:
+ *         description: Account created successfully
+ *       401:
+ *         description: Unauthorized
  */
-router.post("/", authMiddleware.authMiddleware, accountController.createAccountController)
-
+router.post(
+  "/",
+  authMiddleware.authMiddleware,
+  accountController.createAccountController,
+);
 
 /**
- * - GET /api/accounts/
- * - Get all accounts of the logged-in user
- * - Protected Route
+ * @swagger
+ * /api/accounts:
+ *   get:
+ *     summary: Get all accounts of logged-in user
+ *     tags:
+ *       - Accounts
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Accounts fetched successfully
+ *       401:
+ *         description: Unauthorized
  */
-router.get("/", authMiddleware.authMiddleware, accountController.getUserAccountsController)
-
+router.get(
+  "/",
+  authMiddleware.authMiddleware,
+  accountController.getUserAccountsController,
+);
 
 /**
- * - GET /api/accounts/balance/:accountId
+ * @swagger
+ * /api/accounts/balance/{accountId}:
+ *   get:
+ *     summary: Get account balance
+ *     tags:
+ *       - Accounts
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: accountId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Account ID
+ *     responses:
+ *       200:
+ *         description: Balance fetched successfully
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Account not found
  */
-router.get("/balance/:accountId", authMiddleware.authMiddleware, accountController.getAccountBalanceController)
+router.get(
+  "/balance/:accountId",
+  authMiddleware.authMiddleware,
+  accountController.getAccountBalanceController,
+);
 
-
-
-module.exports = router
-
-/*
-Account routes:
-
-- Creates an Express router for account-related endpoints
-- Imports authentication middleware to protect routes
-- Imports account controller functions
-
-Routes:
-- POST /api/accounts/
-  → Creates a new account for the logged-in user (protected route)
-
-- GET /api/accounts/
-  → Fetches all accounts belonging to the logged-in user (protected route)
-
-- GET /api/accounts/balance/:accountId
-  → Fetches balance of a specific account if it belongs to the logged-in user (protected route)
-
-- Exports the router for use in the main application
-*/
+module.exports = router;

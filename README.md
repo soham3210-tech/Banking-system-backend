@@ -1,3 +1,25 @@
+## 🚀 Live API Documentation
+
+You can explore and test all available API endpoints using Swagger UI:
+
+🔗 Swagger Documentation:
+https://banking-system-backend-ndzf.onrender.com/api-docs
+
+The Swagger interface allows you to:
+- View all available routes
+- Test API requests and responses
+- Authenticate using JWT Bearer tokens
+- Explore authentication, accounts, deposits, and transaction APIs
+
+
+
+
+
+
+
+
+
+
 # Banking System Backend
 
 Lightweight backend for a simple banking system built with Node.js, Express, and MongoDB (Mongoose).

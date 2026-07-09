@@ -1,6 +1,9 @@
 /*🏦 Banking System Backend - Complete Code Understanding
+
 What This Is
+
 A Node.js Express backend for a banking system with user authentication (register, login, logout) and MongoDB storage. It handles user registration with email verification, password encryption, JWT token generation, and session management.
+
 
 Stack
 Language: JavaScript (Node.js)
@@ -9,6 +12,8 @@ Database: MongoDB (via Mongoose ODM)
 Auth: JWT (JSON Web Tokens)
 Password: bcryptjs (hashing)
 Email: Nodemailer (Gmail)
+
+
 📁 How It's Organized
 Code
 src/
@@ -22,6 +27,8 @@ src/
     auth.controller.js  Business logic (register, login, logout)
   routes/
     auth.routes.js   API endpoints mapping
+
+
 🔄 How It Fits Together
 Code
 User Request (Client)
@@ -37,6 +44,9 @@ User Request (Client)
     Database (MongoDB) → persists user data
         ↓
     Response sent back to Client
+
+
+
 🚀 DRY RUN - User Registration Flow (Step-by-Step)
 Scenario: User clicks "Sign Up"
 Code
@@ -53,6 +63,10 @@ JavaScript
 app.listen(3000, () => {
   console.log("Server is running on the port 3000");
 });
+
+
+
+
 ✅ Request hits port 3000, Express middleware express.json() parses the JSON body
 
 Step 2: Route matching
@@ -62,7 +76,12 @@ app.use("/api/auth", authRouter);  // Routes the request to authRouter
 
 // src/routes/auth.routes.js
 router.post("/register", authController.userRegisterController)
+
 ✅ Request matched to /api/auth/register → calls userRegisterController
+
+
+
+
 
 Step 3: Controller validates & prepares data
 JavaScript
@@ -106,6 +125,11 @@ async function userRegisterController(req, res) {
 }
 ✅ Data extracted, user checked, new user created
 
+
+
+
+
+
 Step 4: Model validation & pre-save hook
 JavaScript
 // src/models/user.model.js
@@ -138,6 +162,11 @@ userSchema.pre("save", async function () {
 });
 ✅ Email validated, password hashed using bcrypt
 
+
+
+
+
+
 Step 5: Data stored in MongoDB
 JavaScript
 // MongoDB Document saved:
@@ -150,6 +179,11 @@ JavaScript
   updatedAt: ISODate("2026-07-05T10:30:00Z")
 }
 ✅ User saved in MongoDB, password hashed, never stored as plain text
+
+
+
+
+
 
 Step 6: Email sent via Nodemailer
 JavaScript
@@ -167,6 +201,12 @@ Subject: "Welcome to Banking System"
 Body: "Your account has been created successfully."
 ✅ Welcome email delivered to user's inbox
 
+
+
+
+
+
+
 Step 7: Response sent back to client
 JavaScript
 CLIENT RECEIVES:
@@ -178,6 +218,12 @@ CLIENT RECEIVES:
 Status: 200 OK
 ✅ Client stores token for authenticated requests
 
+
+
+
+
+
+
 🔐 DRY RUN - User Login Flow
 Scenario: User clicks "Sign In"
 Code
@@ -187,12 +233,21 @@ POST /api/auth/login
   "email": "john@example.com",
   "password": "myPassword123"
 }
+
+
+
+
 Step 1: Find user in database
 JavaScript
 // src/controllers/auth.controller.js
 const user = await userModel.findOne({ email }).select("+password")
 // ⚠️ .select("+password") needed because password has select: false
 ✅ User retrieved, including hashed password
+
+
+
+
+
 
 Step 2: Compare plain text password with hash
 JavaScript
@@ -212,6 +267,9 @@ if (!isValidPassword) {
 }
 ✅ Password verified using bcrypt
 
+
+
+
 Step 3: Generate JWT token
 JavaScript
 const token = jwt.sign(
@@ -220,6 +278,9 @@ const token = jwt.sign(
   { expiresIn: "3d" }    // Token valid for 3 days
 );
 ✅ JWT created with user ID payload
+
+
+
 
 Step 4: Set cookie & send response
 JavaScript
@@ -235,17 +296,26 @@ res.status(200).json({
 });
 ✅ Token in both cookie and response body
 
+
+
+
+
 🚪 DRY RUN - User Logout Flow
 Scenario: User clicks "Logout"
 Code
 CLIENT SENDS:
 POST /api/auth/logout
 Header: Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+
+
 Step 1: Extract token
 JavaScript
 // src/controllers/auth.controller.js
 const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
 // Tries: 1) HTTP cookie, 2) Bearer token from header
+
+
 Step 2: Add token to blacklist
 JavaScript
 await tokenBlackListModel.create({
@@ -253,6 +323,8 @@ await tokenBlackListModel.create({
 });
 // ⚠️ NOTE: tokenBlackListModel is referenced but NOT defined in the code!
 // This is a BUG - needs to be imported/created
+
+
 Step 3: Clear cookie & send response
 JavaScript
 res.clearCookie("token");
@@ -378,44 +450,20 @@ Code
 │  User receives welcome email                                     │
 │                                                                   │
 └─────────────────────────────────────────────────────────────────┘
-🐛 Issues Found in the Code
-Issue 1: Typo in auth controller
-JavaScript
-// Line 37: "staus" instead of "status"
-res.staus(201).json({  // ❌ WRONG
-res.status(201).json({  // ✅ CORRECT
-Issue 2: Syntax error in JWT generation
-JavaScript
-// Line 49: using = instead of :
-const token = jwt.sign({userid=user._id}, ...)  // ❌ WRONG
-const token = jwt.sign({userid: user._id}, ...)  // ✅ CORRECT
-Issue 3: Missing JWT_SECRET environment variable
-JavaScript
-// .env file has:
-jwt_secret=47a6b9475adde236694c537c9a7250a23640c7afb9096af7
 
-// But code uses:
-process.env.JWT_SECRET  // ❌ Case mismatch!
-process.env.jwt_secret  // ✅ Should match
-Issue 4: Undefined tokenBlackListModel
-JavaScript
-// Line 98: Used but never imported
-await tokenBlackListModel.create({  // ❌ Not defined
-// Need to create: src/models/tokenBlacklist.model.js
-Issue 5: Unreachable code in register function
-JavaScript
-// Line 43-51: Code after return statement never executes
-if(isExits){
-  res.status(201).json({...});  // Returns here
-  // Everything below is unreachable ❌
-  const user = await userModel.create({...});
-}
+
+
+
+
+
+
 📝 Environment Variables (.env)
 bash
 MONGO_URI=mongodb+srv://user:password@cluster0.../database-name
 jwt_secret=your_secret_key_here
 EMAIL_USER=your_gmail@gmail.com
 EMAIL_PASS=app_specific_password  # Not regular password!
+
 ✅ How to Run
 bash
 # 1. Install dependencies

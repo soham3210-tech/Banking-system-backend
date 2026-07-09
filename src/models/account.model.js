@@ -172,10 +172,8 @@ accountSchema.methods.getBalance = async function () {
         balance = totalCredit - totalDebit
   ---------------------------------------------------------
   */
-  const balanceData = await ledgerModel.aggregate([
-    /*
-    Select ledger entries for the current account.
-    */
+  const balanceData = await ledgerModel.aggregate([ 
+    /* Select ledger entries for the current account. */
     { $match: { account: this._id } },
     /*
     Group all matching ledger entries into one result.
